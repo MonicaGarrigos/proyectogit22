@@ -1,5 +1,4 @@
 function ControlWeb() {
-
     this.comprobarCookie = function () {
         if ($.cookie("nick")) {
             rest.nick = $.cookie("nick");
@@ -9,6 +8,7 @@ function ControlWeb() {
             this.mostrarAgregarUsuario();
         }
     }
+
     this.mostrarAgregarUsuario = function () {   //LLAMADA AL SERVIDOR
         let cadena = '<div class="row" id="mAU">';//'<form class="form-row needs-validation"  id="mAJ">';
         cadena = cadena + "<div class='col'>";
