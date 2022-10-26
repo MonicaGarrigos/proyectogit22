@@ -10,7 +10,9 @@ function ClienteRest() {
                 console.log("Usuario " + data.nick + " registrado")
                 cli.nick = data.nick;
                 //ws.nick=data.nick;
-                $.cookie("nick", data.nick);
+                $.cookie("nick", data.nick);  //Aquí se crea una cookie
+                cws.conectar();
+                cli.obtenerListaPartidas();
                 iu.mostrarHome();//iu.mostrarHome(data.nick)
             }
             else {

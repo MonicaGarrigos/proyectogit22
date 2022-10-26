@@ -72,7 +72,8 @@ function ControlWeb() {
         $("#btnCP").on("click", function (e) {
             $("#mCP").remove();
             $('#mLP').remove();
-            rest.crearPartida();
+            //rest.crearPartida();
+            cws.crearPartida();
         });
     }
     this.mostrarCodigo = function (codigo) {
@@ -111,7 +112,7 @@ function ControlWeb() {
             if (codigo) {
                 $('#mLP').remove();
                 $('#mCP').remove();
-                rest.unirseAPartida(codigo);
+                cws.unirseAPartida(codigo);
             }
         });
         $("#btnAL").on("click", function (e) {

@@ -14,7 +14,7 @@ function Juego() {
 	this.eliminarUsuario = function (nick) {
 		delete this.usuarios[nick];
 	}
-	this.jugadorCreaPartida = function (nick) {
+	this.jugadorCrearPartida = function (nick) {
 		let usr = this.usuarios[nick];
 		let res = { codigo: -1 };
 		if (usr) {
@@ -71,6 +71,10 @@ function Juego() {
 		}
 		return lista;
 	}
+
+	this.obtenerPartidas=function(codigo){
+		return this.partidas[codigo];
+	}
 }
 
 
@@ -118,6 +122,11 @@ function Partida(codigo, user) {
 	this.hayHueco = function () {
 		return (this.jugadores.length < this.maxJugadores)
 	}
+
+	this.esJugando=function(){
+		this.fase="jugando";
+	}
+	
 	this.agregarJugador(this.owner);
 }
 
