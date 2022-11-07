@@ -2,6 +2,7 @@ function ControlWeb() {
     this.comprobarCookie = function () {
         if ($.cookie("nick")) {
             rest.nick = $.cookie("nick");
+            cws.conectar();
             this.mostrarHome();
         }
         else {
@@ -71,7 +72,7 @@ function ControlWeb() {
         $('#crearPartida').append(cadena);
         $("#btnCP").on("click", function (e) {
             $("#mCP").remove();
-            $('#mLP').remove();
+            
             //rest.crearPartida();
             cws.crearPartida();
         });
@@ -92,7 +93,7 @@ function ControlWeb() {
         $('#listaPartidas').append(cadena);
 
     }
-    this.mostrarListaDePartidasDisponibles = function (lista) {
+    this.mostrarListaPartidasDisponibles = function (lista) {
         $('#mLP').remove();
         let cadena = "<div class='row' id='mLP'>";
         cadena = cadena + "<div class='col'>";

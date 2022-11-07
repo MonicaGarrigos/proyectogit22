@@ -23,24 +23,35 @@ function ClienteWS() {
         this.socket.on("partidaCreada", function(data){
             console.log(data);
             if(data.codigo!=-1){
-                console.log("Usuario"+nick+"crea partida codigo"+ data.codigo);
+                console.log("Usuario"+rest.nick+"crea partida codigo"+ data.codigo);
                 iu.mostrarCodigo(data.codigo);
+                
             }
             else{
                 console.log("No se ha podido crear partida");
             }
         })
 
+        this.socket.on("actualizarListaPartidas",function(lista){
+            if(!cli.codigo){
+                iu.mostrarListaPartidasDisponibles(lista);
+            }
+        })
 
         this.socket.on("unirseAPartida", function(data){
             console.log(data);
             if(data.codigo!=-1){
                 console.log("Usuario"+nick+"se une a partida codigo"+ data.codigo);
                 iu.mostrarCodigo(data.codigo);
+                cli.codigo=data.codigo;
             }
             else{
                 console.log("No se ha podido unir a partida");
             }
+        })
+
+        this.socket.on("jugar",function(){
+            iu.mostarModal("A jugar");
         })
     }
 }

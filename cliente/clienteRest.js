@@ -12,7 +12,7 @@ function ClienteRest() {
                 //ws.nick=data.nick;
                 $.cookie("nick", data.nick);  //Aquí se crea una cookie
                 cws.conectar();
-                cli.obtenerListaPartidas();
+                cli.obtenerListaPartidas(); /****/
                 iu.mostrarHome();//iu.mostrarHome(data.nick)
             }
             else {
@@ -76,8 +76,16 @@ function ClienteRest() {
         let cli = this;
         $.getJSON("/obtenerPartidasDisponibles", function (lista) {
             console.log(lista);
-            iu.mostrarListaDePartidasDisponibles(lista);
+            iu.mostrarListaPartidasDisponibles(lista);
         });
     }
+
+    this.usuarioSale=function(){
+		let nick=this.nick;
+		$.getJSON("/salir/"+nick,function(){
+			$.removeCookie("nick");
+			iu.comprobarCookie();
+		})
+	}
 
 }
