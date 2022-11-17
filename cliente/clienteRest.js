@@ -3,8 +3,9 @@ function ClienteRest() {
 
     this.agregarUsuario = function (nick) {
         let cli = this;
-        $.getJSON("/agregarUsuario/" + nick, function (data) {
-            //se ejecuta cuando conteste el servidor
+        $.getJSON("/agregarUsuario/" + nick, function (data) {//funcion getJSON de JQuery
+            //Este data proviene de los response.send(res) del API REST(index.js), los campos deben ser iguales
+            //se ejecuta cuando conteste el servidor --> función de callback
             console.log(data);
             if (data.nick != -1) {
                 console.log("Usuario " + data.nick + " registrado")
@@ -22,16 +23,37 @@ function ClienteRest() {
             }
         });
         // Todavía no estoy seguro de que haya contestado el servidor
-        // Lo que pongas aquí se ejecuta a la vez que la llamada
+        // Lo que pongas aquí se ejecuta a la vez que la llamada, sin embargo en la parte de arriba en la funcion
+        //de callback si estoy seguro(por si quiero poner algo que sepa seguro q tiene q ir despues)
+	
     }
+
+    this.comprobarUsuario = function(){
+		let cli= this;
+		$.getJSON("/comprobarUsuario/"+this.nick,function(data){
+			if (data.nick!=-1){
+                console.log("Usuario " + data.nick + " activo")
+				cws.conectar();    
+				iu.mostrarHome();
+		}
+			else{
+                console.log("No se ha podido registrar el usuario")
+				//iu.mostrarModal("El nick ya está en uso");
+				iu.mostrarAgregarUsuario();
+                
+			}
+		});
+	}
+
 
     this.crearPartida = function () {
         let cli = this;
         let nick = cli.nick;
+
         $.getJSON("/crearPartida/" + nick, function (data) {
             console.log(data);
             if (data.codigo != -1) {
-                console.log("Usuario " + nick + " crea partida codigo: " + data.codigo)
+                console.log("Partida creada por el usuario: " + nick + " con el código: " + data.codigo)
                 iu.mostrarCodigo(data.codigo);
                 //ws.nick=data.nick;
                 //$.cookie("nick",ws.nick);
@@ -72,6 +94,7 @@ function ClienteRest() {
             iu.mostrarListaDePartidas(lista);
         });
     }
+
     this.obtenerListaPartidasDisponibles = function () {
         let cli = this;
         $.getJSON("/obtenerPartidasDisponibles", function (lista) {
@@ -89,3 +112,8 @@ function ClienteRest() {
 	}
 
 }
+
+
+//Lo de module.exports no se pone aqui al ser del cliente, ya que todo lo puesto aqui es global
+//Los objetos del cliente(index.html,clienteRest,...) estan en el servidor y con la primera peticion de http el servidor los manda al cliente
+//pero como los renderiza el cliente en el diagrama despliegue los ponemos en el navegador no en el servidor

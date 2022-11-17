@@ -1,0 +1,2 @@
+cws.colocarBarco("b2",0,0)
+cws.colocarBarco("b4",0,2)
