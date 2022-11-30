@@ -1,0 +1,7 @@
+Alternativas
+- persistencia: cad.js
+    -MongoDB local o como servicios: GCP, Mongo Atlas ...
+- Relacional: local (MySQL) o como servicio (GCP,...)
+- autenticacion:
+    - propia: email + clave
+    - de terceros: gmail, twitter ... (OAUTH)

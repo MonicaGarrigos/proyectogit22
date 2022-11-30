@@ -13,7 +13,7 @@ function ClienteRest() {
                 //ws.nick=data.nick;
                 $.cookie("nick", data.nick);  //Aquí se crea una cookie
                 cws.conectar();
-                cli.obtenerListaPartidas(); /****/
+                //cli.obtenerListaPartidas(); /****/
                 iu.mostrarHome();//iu.mostrarHome(data.nick)
             }
             else {
@@ -45,26 +45,23 @@ function ClienteRest() {
 		});
 	}
 
-
+/*
     this.crearPartida = function () {
-        let cli = this;
-        let nick = cli.nick;
-
-        $.getJSON("/crearPartida/" + nick, function (data) {
-            console.log(data);
-            if (data.codigo != -1) {
-                console.log("Partida creada por el usuario: " + nick + " con el código: " + data.codigo)
+        let cli=this;
+        let nick=cli.nick;
+        
+        $.getJSON("/crearPartida/"+nick,function(data){
+            console.log(data)
+            if(data.codigo!=-1){
+                console.log("Partida creada por "+nick + " con codigo "+ data.codigo)
                 iu.mostrarCodigo(data.codigo);
-                //ws.nick=data.nick;
-                //$.cookie("nick",ws.nick);
-                //iu.mostrarHome(data);
+				//$.cookie("nick",cli.nick);
             }
-            else {
-                console.log("No se ha podido crear partida")
-                //iu.mostrarModal("El nick ya está en uso");
-                //iu.mostrarAgregarJugador();
+            else{
+                console.log("No se ha podido crear la partida")
             }
-        });
+
+        })
     }
 
     this.unirseAPartida = function (codigo) {
@@ -86,6 +83,8 @@ function ClienteRest() {
             }
         });
     }
+
+    */
     this.obtenerListaPartidas = function () {
         let cli = this;
         //obtenerPartidasDisponibles
@@ -99,7 +98,7 @@ function ClienteRest() {
         let cli = this;
         $.getJSON("/obtenerPartidasDisponibles", function (lista) {
             console.log(lista);
-            iu.mostrarListaPartidasDisponibles(lista);
+            iu.mostrarListaDePartidasDisponibles(lista);
         });
     }
 

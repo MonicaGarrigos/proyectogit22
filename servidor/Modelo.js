@@ -171,7 +171,6 @@ function Usuario(nick, juego) {
         //ARRAY NORMAL:
         //this.flota.push(new Barco("b2",2)); //agrego dos barcos - como es una coleccion hago push => aqui lo hacemos como un array normal
         //this.flota.push(new Barco("b4",4));   
-
         //ARRAY ASOCIATIVO: -- tengo que iterar con las claves (ej: for-each)
         this.flota["b2"] = new Barco("b2", 2);
         this.flota["b4"] = new Barco("b4", 4); //va con clave-valor
@@ -181,16 +180,20 @@ function Usuario(nick, juego) {
 
     this.colocarBarco = function (nombre, x, y) { //hecho para que lo diga el usuario
         //comprobar fase
-        if (partida.fase == "desplegando") {  //en la fase en la que puedo colocar barcos es DESPLEGANDO --> es para evitar que el jugador coloque barcos en otra fase (como jugando)
+        if (this.partida.fase == "desplegando") {  //en la fase en la que puedo colocar barcos es DESPLEGANDO --> es para evitar que el jugador coloque barcos en otra fase (como jugando)
+            console.log(nombre)
             let barco = this.flota[nombre];
+            console.log(barco);
             this.tableroPropio.colocarBarco(barco, x, y); //delego en tablero...
-            //console.log(this.flota)
-            return barco
+            console.log("El usuario", this.nick, "coloca el barco", barco.nombre, "en la posicion", x, y)
+            return barco;
         }
         //coloca el barco de nombre en la casilla x, y del tamaño propio
 
     }
-
+    this.comprobarLimites = function (tam, x) {
+        return this.tableroPropio.comprobarLimites(tam, x)
+    }
 
     this.todosDesplegados = function () { //¿Están todos los barcos desplegados?
         for (var key in this.flota) {
@@ -237,14 +240,21 @@ function Usuario(nick, juego) {
         }
         return true;
     }
+    this.obtenerFlota = function () {
+        return this.flota;
+    }
 
-    this.obtenerBarcoDesplegado = function (nombre) {
-        for (var key in this.flota) {
-            if (this.flota[key] == nombre) {
-                return this.flota[key];
+    this.obtenerBarcoDesplegado = function (nombre, x) {
+        for (let key in this.flota) {
+            if (this.flota[key].nombre == nombre) {
+                if (this.comprobarLimites(this.flota[key].tam, x)) {
+                    return this.flota[key];
+                } else {
+                    return false
+                }
             }
-            return undefined
         }
+        return undefined
     }
 
 
@@ -270,7 +280,7 @@ function Partida(codigo, usr) {
             this.jugadores.push(usr);
             console.log("El usuario " + usr.nick + " se une a la partida " + this.codigo);
             usr.partida = this;
-            usr.inicializarTableros(5);
+            usr.inicializarTableros(10);
             usr.inicializarFlota();
             this.comprobarFase();
         }
@@ -288,6 +298,10 @@ function Partida(codigo, usr) {
 
     this.esDesplegando = function () {
         return this.fase == "desplegando";
+    }
+
+    this.esFinal = function () {
+        return this.fase == "final";
     }
 
     this.comprobarFase = function () {
@@ -311,7 +325,7 @@ function Partida(codigo, usr) {
 
     this.flotasDesplegadas = function () {
         for (i = 0; i < this.jugadores.length; i++) {
-            if (!this.jugadores[i].todosDesplegados) {
+            if (!this.jugadores[i].todosDesplegados()) {
                 return false;
             }
         }
@@ -332,6 +346,11 @@ function Partida(codigo, usr) {
 
     this.cambiarTurno = function (nick) {
         this.turno = this.obtenerRival(nick);
+    }
+
+
+    this.obtenerTurno = function () {
+        return this.turno
     }
 
     this.obtenerRival = function (nick) {
@@ -360,12 +379,13 @@ function Partida(codigo, usr) {
         if (this.turno.nick == atacante.nick) {
             let atacado = this.obtenerRival(nick);
             let estado = atacado.meDisparan(x, y);
-
-            // let estado = atacado.obtenerEstado(x, y);//estado de la casilla que ha sido disparada
+            //let estado=atacado.obtenerEstado(x,y);
             console.log(estado);
-            atacante.marcarEstado(estado, x, y); //tablero rival del atacante
+            atacante.marcarEstado(estado, x, y);
 
             this.comprobarFin(atacado);
+            console.log(atacante.nick + ' dispara a ' + atacado.nick + ' en casillas ' + x, y);
+            return estado;
         }
         else {
             console.log("No es tu turno")
@@ -429,13 +449,23 @@ function Tablero(size) {
         }
     }
 
+    this.comprobarLimites = function (tam, x) {
+        if (x + tam > this.size) {
+            console.log('excede los limites')
+            return false
+        } else {
+            return true
+        }
+    }
+
     this.casillasLibres = function (x, y, tam) {
         for (i = x; i < tam; i++) {
             let contiene = this.casillas[i][y].contiene;
-            if (!contiene.esAgua()) {
+            if (!contiene.esAgua() || this.comprobarLimites(tam, x)) {
                 return false;
             }
         }
+        return true;
 
     }
 
@@ -549,8 +579,8 @@ function Agua() {
 
 //Conveniente crear las clases de las fases y mover algunos metodos a ellas
 
-function Inicial(){  //En esta por ejemplo el agregar jugador
-	this.nombre="inicial"
+function Inicial() {  //En esta por ejemplo el agregar jugador
+    this.nombre = "inicial"
 }
 //y las demas
 
