@@ -45,7 +45,7 @@ describe("El juego...", function () {
         expect(usr1.tableroRival).toBeDefined();
         expect(usr2.tableroRival).toBeDefined();
 
-        expcet(usr1.tableroPropio.casillas.length).toEqual(SIZE);
+        expcet(usr1.tableroPropio.casillas.length).toEqual();
         expcet(usr2.tableroPropio.casillas.length).toEqual(SIZE);
 
         //habria que recorrer las 5 columnas

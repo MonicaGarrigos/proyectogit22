@@ -119,6 +119,7 @@ function ClienteWS() {
         this.socket.on("barcoColocado", function (res) {
             console.log("Barco "+res.barco+" colocado?: "+res.colocado);
 			let barco=tablero.flota[res.barco];
+            
 			if (res.colocado){
 				tablero.terminarDeColocarBarco(barco,res.x,res.y);
 				cli.barcosDesplegados();
@@ -156,9 +157,10 @@ function ClienteWS() {
         });
 
         this.socket.on("faseDesplegando", function (data) {
-            tablero.mostrarTablero(true)
+            //tablero.mostrarTablero(true)
             tablero.flota = data.flota;
-            // tablero.mostrarFlota(); //data.flota();
+            tablero.elementosGrid();
+            tablero.mostrarFlota(); //data.flota();
             console.log("Ya puedes desplegar la flota");
         });
 

@@ -71,6 +71,7 @@ function ServidorWS() {
             socket.on("colocarBarco", function (nick, nombre, x, y) {
                 let jugador = juego.obtenerUsuario(nick);
                 if (jugador) {
+                    console.log(nombre);
                     jugador.colocarBarco(nombre, x, y)
                     //let desplegado = jugador.obtenerBarcoDesplegado(nombre, x)
                     //console.log(desplegado)

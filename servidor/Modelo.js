@@ -172,8 +172,9 @@ function Usuario(nick, juego) {
         //this.flota.push(new Barco("b2",2)); //agrego dos barcos - como es una coleccion hago push => aqui lo hacemos como un array normal
         //this.flota.push(new Barco("b4",4));   
         //ARRAY ASOCIATIVO: -- tengo que iterar con las claves (ej: for-each)
+        this.flota["b1"] = new Barco("b1", 1);
         this.flota["b2"] = new Barco("b2", 2);
-        this.flota["b4"] = new Barco("b4", 4); //va con clave-valor
+        //this.flota["b4"] = new Barco("b4", 4); //va con clave-valor
 
         //otros barcos: 1, 3, 5, ...
     }
@@ -181,9 +182,8 @@ function Usuario(nick, juego) {
     this.colocarBarco = function (nombre, x, y) { //hecho para que lo diga el usuario
         //comprobar fase
         if (this.partida.fase == "desplegando") {  //en la fase en la que puedo colocar barcos es DESPLEGANDO --> es para evitar que el jugador coloque barcos en otra fase (como jugando)
-            console.log(nombre)
             let barco = this.flota[nombre];
-            console.log(barco);
+            console.log("Holaaa"+barco);
             this.tableroPropio.colocarBarco(barco, x, y); //delego en tablero...
             console.log("El usuario", this.nick, "coloca el barco", barco.nombre, "en la posicion", x, y)
             return barco;
@@ -191,6 +191,7 @@ function Usuario(nick, juego) {
         //coloca el barco de nombre en la casilla x, y del tamaño propio
 
     }
+
     this.comprobarLimites = function (tam, x) {
         return this.tableroPropio.comprobarLimites(tam, x)
     }
@@ -422,7 +423,7 @@ function Partida(codigo, usr) {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////***********  TABLERO  *********** /////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////// ***********  TABLERO  *********** /////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function Tablero(size) {
@@ -441,6 +442,7 @@ function Tablero(size) {
     }
 
     this.colocarBarco = function (barco, x, y) {
+        console.log(barco);
         if (this.casillasLibres(x, y, barco.tam)) {
             for (i = x; i < barco.tam; i++) {
                 this.casillas[i][y].contiene = barco;
@@ -519,7 +521,6 @@ function Barco(nombre, tam) {  // "b2" => barco tamaño 2
     this.disparos = 0;
     // Asumimos que son todos HORIZONTALES!!
     this.orientacion; //horizontal, vertical... => NO LO USAMOS -- solo para implementaciones nuestras
-
 
     this.esAgua = function () {
         return false;

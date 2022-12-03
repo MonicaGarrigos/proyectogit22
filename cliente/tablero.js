@@ -15,13 +15,7 @@ function Tablero(size) {
         }
     }
 
-    this.asignarFlotaListener = function () {
-        var playerRoster = document.querySelector('.fleet-roster').querySelectorAll('li');
-        for (var i = 0; i < playerRoster.length; i++) {
-            playerRoster[i].self = this;
-            playerRoster[i].addEventListener('click', this.rosterListener, false);
-        }
-    }
+
 
     this.init = function () {
         //Crear los tableros gráficos
@@ -33,12 +27,6 @@ function Tablero(size) {
             //humanCells[k].addEventListener('mouseover', this.placementMouseover, false);
             //humanCells[k].addEventListener('mouseout', this.placementMouseout, false);
         }
-        // Add a click listener to the roster	
-        var playerRoster = document.querySelector('.fleet-roster').querySelectorAll('li');
-        for (var i = 0; i < playerRoster.length; i++) {
-            playerRoster[i].self = this;
-            playerRoster[i].addEventListener('click', this.rosterListener, false);
-        }
 
         var computerCells = document.querySelector('.computer-player').childNodes;
         for (var j = 0; j < computerCells.length; j++) {
@@ -47,12 +35,19 @@ function Tablero(size) {
         }
     }
 
-    this.colocarBarco = function (nombre, x, y) {
+    this.asignarFlotaListener = function () {
+        var playerRoster = document.querySelector('.fleet-roster').querySelectorAll('li');
+        for (var i = 0; i < playerRoster.length; i++) {
+            playerRoster[i].self = this;
+            playerRoster[i].addEventListener('click', this.rosterListener, false);
+        }
+    }
 
+
+    this.colocarBarco = function (nombre, x, y) {
         console.log("Barco= " + nombre + " x= " + x + " y= " + y);
         cws.colocarBarco(nombre, x, y);
         //return true;
-
     }
 
     this.terminarDeColocarBarco = function (barco, x, y) {
@@ -60,7 +55,9 @@ function Tablero(size) {
             console.log("x: " + (x + i) + " y:" + y);
             this.updateCell(x + i, y, "ship", 'human-player');
         }
-        self.endPlacing(barco.nombre);
+        console.log(barco.nombre);
+        this.endPlacing(barco.nombre);
+        console.log("ya se ha colocado el barco: ", barco.nombre);
     }
 
     this.mostrarTablero = function (mostrar) {
@@ -78,7 +75,7 @@ function Tablero(size) {
 
     this.rosterListener = function (e) {
         let self = e.target.self;
-        var li = this;
+
         // Remove all classes of 'placing' from the fleet roster first
         var roster = document.querySelectorAll('.fleet-roster li');
         for (let i = 0; i < roster.length; i++) {
@@ -89,7 +86,7 @@ function Tablero(size) {
 
         // Set the class of the target ship to 'placing'
         self.nombreBarco = e.target.getAttribute('id');
-        console.log(self.nombreBarco);
+        console.log("Selecciona el barco: ", self.nombreBarco);
         document.getElementById(self.nombreBarco).setAttribute('class', 'placing');
         //Game.placeShipDirection = parseInt(document.getElementById('rotate-button').getAttribute('data-direction'), 10);
         self.placingOnGrid = true;
@@ -98,18 +95,18 @@ function Tablero(size) {
     this.placementListener = function (e) {
         let self = e.target.self;
         console.log("Hola");
-        //if (self.placingOnGrid) {
-        console.log("Hola2")
-        // Extract coordinates from event listener
-        var x = parseInt(e.target.getAttribute('data-x'), 10);
-        var y = parseInt(e.target.getAttribute('data-y'), 10);
-        //console.log("Barco= " + self.nombreBarco + " x= " + x + " y= " + y)
-        // Don't screw up the direction if the user tries to place again.
-        self.colocarBarco(self.nombreBarco, x, y);
-        //if (successful) {
-        // Done placing this ship
-        //self.endPlacing(Game.placeShipType);
-
+        if (self.placingOnGrid) {
+            console.log("Hola2")
+            // Extract coordinates from event listener
+            var x = parseInt(e.target.getAttribute('data-x'), 10);
+            var y = parseInt(e.target.getAttribute('data-y'), 10);
+            //console.log("Barco= " + self.nombreBarco + " x= " + x + " y= " + y)
+            // Don't screw up the direction if the user tries to place again.
+            self.colocarBarco(self.nombreBarco, x, y);
+            //if (successful) {
+            // Done placing this ship
+            //self.endPlacing(Game.placeShipType);
+        }
 
 
         //self.placingOnGrid = false;
@@ -145,13 +142,15 @@ function Tablero(size) {
         }
 
         this.endPlacing(barco.nombre); //Para marcar que ya se ha colocado
-        
+        console.log("se acaba de marcar el barco", barco);
+
     }
 
     this.endPlacing = function (shipType) {
+        console.log("endPlacing");
         document.getElementById(shipType).setAttribute('class', 'placed');
-        self.placingOnGrid = false;
-
+        this.placingOnGrid = false;
+        console.log(shipType);
         // Mark the ship as 'used'
         // Game.usedShips[CONST.AVAILABLE_SHIPS.indexOf(shipType)] = CONST.USED;
 
@@ -159,7 +158,7 @@ function Tablero(size) {
         // Game.placeShipDirection = null;
 
         // Game.placeShipCoords = [];
-    };
+    }
 
     this.updateCell = function (x, y, type, targetPlayer) {
         let player = targetPlayer;
@@ -236,11 +235,11 @@ function Tablero(size) {
                 }
             }
         }
-
+        this.init();
     };
 
-    this.createGrid();
-    this.init();
+    //this.createGrid();
+    //this.init();
 
 
 }
