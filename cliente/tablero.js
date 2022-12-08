@@ -47,6 +47,7 @@ function Tablero(size) {
     this.colocarBarco = function (nombre, x, y) {
         console.log("Barco= " + nombre + " x= " + x + " y= " + y);
         cws.colocarBarco(nombre, x, y);
+        cws.barcosDesplegados();
         //return true;
     }
 

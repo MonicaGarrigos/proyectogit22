@@ -59,11 +59,17 @@ function ServidorWS() {
                 let codigoStr = codigo.toString();
                 if (jugador && partida) {
                     let rival = partida.obtenerRival(jugador.nick);
-                    let res = { codigoP: codigo, nombreA: jugador.nick, nombreG: rival.nick }
-                    partida.abandonarPartida(jugador)
-                    //cli.enviarAlRemitente(socket, "partidaAbandonada", res);
-                    cli.enviarATodosEnPartida(io, codigoStr, "partidaAbandonada", res);
-                    socket.leave(codigoStr)
+                    if (rival == undefined) {
+                        cli.enviarAlRemitente(socket, "partidaCancelada", { codigoP: codigo })
+                        partida.abandonarPartida(jugador)
+                    }
+                    else {
+                        let res = { codigoP: codigo, nombreA: jugador.nick, nombreG: rival.nick }
+                        partida.abandonarPartida(jugador)
+                        //cli.enviarAlRemitente(socket, "partidaAbandonada", res);
+                        cli.enviarATodosEnPartida(io, codigoStr, "partidaAbandonada", res);
+                        socket.leave(codigoStr)
+                    }
 
                 }
             });
@@ -82,50 +88,51 @@ function ServidorWS() {
 
             socket.on("barcosDesplegados", function (nick) {
                 let jugador = juego.obtenerUsuario(nick);
-                if (jugador) {
+
+                if (jugador.barcosDesplegados()) {
                     let partida = jugador.partida;
-                    let res = jugador.barcosDesplegados();
-                    let codigoStr = partida.codigo.toString();
+                    if (partida.flotasDesplegadas()) {
+                        let res = { fase: partida.fase, turno: partida.turno.nick };
+                        let codigoStr = partida.codigo.toString();
 
-                    if (partida.esJugando()) {
-                        cli.enviarATodosEnPartida(io, codigoStr, "aJugar", {});
-
+                        if (partida.esJugando()) {
+                            cli.enviarATodosEnPartida(io, codigoStr, "aJugar", {});
+                        }
                     }
+
 
                 }
             });
 
             socket.on("disparar", function (nick, x, y) {
                 let jugador = juego.obtenerUsuario(nick);
-                let res = { jugador: nick, disparoX: x, disparoY: y }
-                if (jugador) {
-                    let partida = jugador.partida;
-                    //let rival=partida.obtenerRival(nick);
-                    let turno = partida.obtenerTurno();
+                let res = { "jugador": nick, "disparoX": x, "disparoY": y }
 
+                let partida = jugador.partida;
+                //let rival=partida.obtenerRival(nick);
+                let turno = partida.turno;
 
-                    if (jugador == turno) {
-                        //console.log("Si es tu turno,socket")
-                        let impacto = jugador.disparar(x, y)
-                        console.log(impacto, "ServSo")
-                        //let impacto = rival.meDisparan(x, y);
-                        let codigoStr = partida.codigo.toString();
-                        if (partida.esFinal()) {
-                            cli.enviarATodosEnPartida(io, partida.codigo.toString(), "finalPartida", jugador.nick);
-                        }
-
-                        let res2 = { atacante: jugador.nick, impacto: impacto, x: x, y: y, turno: turno.nick }
-                        cli.enviarATodosEnPartida(io, codigoStr, "disparo", res2);
+                if (jugador.nick == turno) {
+                    //console.log("Si es tu turno,socket")
+                    let impacto = jugador.disparar(x, y)
+                    console.log(impacto, "ServSo")
+                    //let impacto = rival.meDisparan(x, y);
+                    let codigoStr = partida.codigo.toString();
+                    if (partida.esFinal()) {
+                        cli.enviarATodosEnPartida(io, partida.codigo.toString(), "finalPartida", jugador.nick);
                     }
-                    else {
-                        //console.log("No es tu turno,socket")
-                        cli.enviarAlRemitente(socket, "noEsTuTurno", res);
-                    }
+
+                    let res2 = { atacante: jugador.nick, impacto: impacto, x: x, y: y, turno: turno.nick }
+                    cli.enviarATodosEnPartida(io, codigoStr, "disparo", res2);
                 }
+                else {
+                    //console.log("No es tu turno,socket")
+                    cli.enviarAlRemitente(socket, "noEsTuTurno", res);
+                }
+
             });
 
         });
     }
-
 }
 module.exports.ServidorWS = ServidorWS;

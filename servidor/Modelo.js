@@ -1,15 +1,21 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////// ***********  JUEGO  *********** //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+let cad = require('./cad.js');
 
-function Juego() {
+function Juego(test) {
     this.partidas = {};
     this.usuarios = {};  //array asociativo [clave][objeto]
+    this.cad = new cad.Cad(); //capa acceso de datos --> cuando haga new de Juego haga tambien new de Objeto Cad (es el obj implementado con la implementación con Mongo)
+    this.test = test; //aqui le voy a decir si estoy pasando test o no
 
     this.agregarUsuario = function (nick) {
         let res = { "nick": -1 };
         if (!this.usuarios[nick]) {
             this.usuarios[nick] = new Usuario(nick, this);
+            this.insertarLog({ "operacion": "inicioSesion", "usuario": nick, "fecha": Date() }, function () {
+                console.log("Registro de log - (iniciar sesion) - insertado");
+            });
             res = { "nick": nick };
             console.log("Nuevo usuario: " + nick);
         }
@@ -17,14 +23,18 @@ function Juego() {
     }
     this.eliminarUsuario = function (nick) {
         delete this.usuarios[nick];
-        console.log("El usuario " + nick + " ha salido del juego.")
+        console.log("El usuario " + nick + " ha salido del juego (ha sido eliminado).")
     }
 
     this.usuarioSale = function (nick) {
         if (this.usuarios[nick]) {
             this.finalizarPartida(nick);
             this.eliminarUsuario(nick);
+            this.insertarLog({ "operacion": "finSesion", "usuario": nick, "fecha": Date() }, function () {
+                console.log("Registro de log - (salir) - insertado");
+            });
         }
+
     }
 
 
@@ -58,8 +68,14 @@ function Juego() {
         //crear partida con propietario nick
         //devolver el código
         let codigo = Date.now();
-        console.log("El usuario " + usr.nick + " crea la partida " + codigo);
+        console.log("El usuario " + usr.nick + " crea el log " + codigo);
+        this.insertarLog({ "operacion": "crearPartida", "propietario": usr.nick, "fecha": Date() }, function () {
+            console.log("Insertado crearPartida");
+        }); //clave=operacion
+
         this.partidas[codigo] = new Partida(codigo, usr);
+
+
         return codigo;
     }
 
@@ -67,6 +83,11 @@ function Juego() {
         let res = -1;
         if (this.partidas[codigo]) {
             res = this.partidas[codigo].agregarJugador(usr);
+
+            this.insertarLog({ "operacion": "unirsePartida", "usuario": usr.nick, "codigoPartida": codigo, "fecha": Date() }, function () {
+                console.log("Registro de log - (unirse a partida) - insertado");
+            });
+
         } else {
             console.log("La partida no existe");
         }
@@ -85,7 +106,7 @@ function Juego() {
         return res;
     }
 
-    this.obtenerUsuario = function (nick) {
+    this.obtenerUsuario = function (nick) {  //código
         //if (this.usuarios[nick]) {
         return this.usuarios[nick];
         //}
@@ -136,6 +157,23 @@ function Juego() {
         }
     }
 
+    this.obtenerLogs = function (callback) {
+        this.cad.obtenerLogs(callback);
+    }
+
+
+    this.insertarLog = function (log, callback) {
+        if (this.test == 'false') {
+            console.log(log, callback)
+        }
+    }
+
+    if (!test) { //conectar lo voy a hacer en Jugador en vez de en cad
+        this.cad.conectar(function (db) {
+            console.log("conectado a Atlas");
+        })
+    }
+
 
 }
 
@@ -183,7 +221,7 @@ function Usuario(nick, juego) {
         //comprobar fase
         if (this.partida.fase == "desplegando") {  //en la fase en la que puedo colocar barcos es DESPLEGANDO --> es para evitar que el jugador coloque barcos en otra fase (como jugando)
             let barco = this.flota[nombre];
-            console.log("Holaaa"+barco);
+            //console.log("Holaaa" + barco);
             this.tableroPropio.colocarBarco(barco, x, y); //delego en tablero...
             console.log("El usuario", this.nick, "coloca el barco", barco.nombre, "en la posicion", x, y)
             return barco;
@@ -235,7 +273,7 @@ function Usuario(nick, juego) {
 
     this.flotaHundida = function () { //¿Están todos los barcos hundido?
         for (var key in this.flota) {
-            if (!this.flota[key].estado == "intacto") {
+            if (this.flota[key].estado != "hundido") {
                 return false;
             }
         }
@@ -245,7 +283,7 @@ function Usuario(nick, juego) {
         return this.flota;
     }
 
-    this.obtenerBarcoDesplegado = function (nombre, x) {
+    /*this.obtenerBarcoDesplegado = function (nombre, x) {
         for (let key in this.flota) {
             if (this.flota[key].nombre == nombre) {
                 if (this.comprobarLimites(this.flota[key].tam, x)) {
@@ -256,6 +294,18 @@ function Usuario(nick, juego) {
             }
         }
         return undefined
+    }*/
+
+    this.logAbandonarPartida = function (jugador, codigo) {
+        this.juego.insertarLog({ "operacion": "abandonarPartida", "usuario": jugador.nick, "codigo": codigo, "fecha": Date() }, function () {
+            console.log("Registro de log - (abandonar) - insertado");
+        });
+
+    }
+    this.logFinalizarPartida = function (perdedor, ganador, codigo) {
+        this.juego.insertarLog({ "operacion": "finalizarPartida", "perdedor": perdedor, "ganador": ganador, "codigo": codigo, "fecha": Date() }, function () {
+            console.log("Registro de log(finalizarPartida) insertado");
+        });
     }
 
 
@@ -264,7 +314,7 @@ function Usuario(nick, juego) {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////***********  PARTIDA  *********** /////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////// ***********  PARTIDA  *********** /////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function Partida(codigo, usr) {
@@ -280,6 +330,8 @@ function Partida(codigo, usr) {
         if (this.hayHueco()) {
             this.jugadores.push(usr);
             console.log("El usuario " + usr.nick + " se une a la partida " + this.codigo);
+            console.log("Hay " + this.jugadores.length + " jugadores");
+
             usr.partida = this;
             usr.inicializarTableros(10);
             usr.inicializarFlota();
@@ -341,6 +393,7 @@ function Partida(codigo, usr) {
     }
 
     this.asignarTurnoInicial = function () {
+        console.log("se pone elturno");
         this.turno = this.jugadores[0]; //el turno lo tiene el jugador 0
 
     }
@@ -375,9 +428,10 @@ function Partida(codigo, usr) {
     }
 
     this.disparar = function (nick, x, y) {
-        let atacante = this.obtenerJugador();
+        let atacante = this.obtenerJugador(nick);
 
-        if (this.turno.nick == atacante.nick) {
+        if (this.turno.nick == atacante.nick) { 
+
             let atacado = this.obtenerRival(nick);
             let estado = atacado.meDisparan(x, y);
             //let estado=atacado.obtenerEstado(x,y);
@@ -399,6 +453,9 @@ function Partida(codigo, usr) {
             this.fase = "final";
             console.log("fin de la partida");
             console.log("Ganador: " + this.turno.nick);
+
+            jugador.logFinalizarPartida(jugador.nick, this.turno.nick, this.codigo);
+
         }
     }
 
@@ -410,7 +467,12 @@ function Partida(codigo, usr) {
             this.fase = "final";
             console.log("Fin de la partida");
             console.log("Ha abandonado el jugador " + jugador.nick);
-            console.log("Ganador: " + rival.nick);
+
+            if (rival) {
+                console.log("Ganador: " + rival.nick);
+            }
+
+            jugador.logAbandonarPartida(jugador, this.codigo);
 
         }
     }
@@ -442,10 +504,10 @@ function Tablero(size) {
     }
 
     this.colocarBarco = function (barco, x, y) {
-        console.log(barco);
+        //console.log(barco);
         if (this.casillasLibres(x, y, barco.tam)) {
-            for (i = x; i < barco.tam; i++) {
-                this.casillas[i][y].contiene = barco;
+            for (i = 0; i < barco.tam; i++) {
+                this.casillas[i+x][y].contiene = barco;
             }
             barco.desplegado = true;
         }
@@ -461,13 +523,18 @@ function Tablero(size) {
     }
 
     this.casillasLibres = function (x, y, tam) {
-        for (i = x; i < tam; i++) {
-            let contiene = this.casillas[i][y].contiene;
-            if (!contiene.esAgua() || this.comprobarLimites(tam, x)) {
-                return false;
+        if (this.comprobarLimites()){
+            for (i = 0; i < tam; i++) {
+                let contiene = this.casillas[i+x][y].contiene;
+                if (!contiene.esAgua()) {
+                    return false;
+                }
             }
+            return true;
         }
-        return true;
+        else{
+            return false;
+        }
 
     }
 
@@ -530,7 +597,7 @@ function Barco(nombre, tam) {  // "b2" => barco tamaño 2
         console.log("Casilla ocupada");
     }
 
-    this.meDisparan = function () {
+    this.meDisparan = function (tablero,x,y) {
         this.disparos++;
         if (this.disparos < this.tam) {
             this.estado = "tocado";
@@ -587,4 +654,3 @@ function Inicial() {  //En esta por ejemplo el agregar jugador
 
 
 module.exports.Juego = Juego;
-

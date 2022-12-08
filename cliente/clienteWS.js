@@ -75,7 +75,7 @@ function ClienteWS() {
             }
         });
 
-        /*this.socket.on("unirseAPartida", function (data) {
+        this.socket.on("unirseAPartida", function (data) {
             console.log(data);
             if (data.codigo != -1) {
                 console.log("Usuario" + nick + "se une a partida codigo" + data.codigo);
@@ -86,7 +86,7 @@ function ClienteWS() {
                 console.log("No se ha podido unir a partida");
             }
         });
-*/
+
         this.socket.on("partidaAbandonada", function (data) {
             if (data.codigo != -1) {
                 console.log(data.nombreA + " ha abandonado la partida con codigo: " + data.codigoP + "\n" + " Ha ganado " + data.nombreG)
@@ -144,6 +144,7 @@ function ClienteWS() {
                 tablero.updateCell(res.x, res.y, res.impacto, 'human-player');
             }
         });
+        
         this.socket.on("info",function(info){
 			console.log(info);
 		});

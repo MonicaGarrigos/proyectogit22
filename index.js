@@ -7,12 +7,13 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
+var args = process.argv.slice(2);
 
 const PORT = process.env.PORT || 3001;
 const modelo = require("./servidor/modelo.js");
 const sWS = require("./servidor/servidorWS.js");
 
-let juego = new modelo.Juego();
+let juego = new modelo.Juego(args[0]);
 let servidorWS = new sWS.ServidorWS();
 
 
@@ -67,6 +68,12 @@ app.get("/obtenerPartidasDisponibles", function (request, response) {
   let lista = juego.obtenerPartidasDisponibles();
 
   response.send(lista);
+})
+
+app.get("/obtenerLogs", function (request, response) {
+  juego.obtenerLogs(function(logs){
+    response.send(logs);
+  })
 })
 
 app.get("/salir/:nick", function (request, response) {
